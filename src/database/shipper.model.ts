@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose"
+import mongoose, { Schema, Document, Types } from "mongoose"
 
 interface IAddress {
     addressLine1: string
@@ -11,6 +11,19 @@ interface IAddress {
 interface IEmergencyContact {
     name: string
     phoneNumber: string
+}
+export interface IClientResult {
+    message: string
+    userId: string
+    success: boolean
+}
+export interface IClient {
+    companyRefId: string
+    companyName:string
+    address: IAddress
+    contactPerson:string
+    contactNumber:string
+    _id?:string
 }
 
 interface ICompanyDetails {
@@ -28,12 +41,15 @@ export interface ICompany extends Document {
         lastName: string
     }
     email: string
+    status:string
     companyRefId: string
     address: IAddress
     personalDetails: {
         emergencyContact: IEmergencyContact
     }
     companyDetails: ICompanyDetails
+    clients?: Types.ObjectId[]
+    pickups?: Types.ObjectId[]
 }
 
 const AddressSchema: Schema = new Schema({
@@ -71,11 +87,24 @@ const CompanySchema: Schema = new Schema({
     },
     email: { type: String, required: true },
     companyRefId: { type: String, required: true },
+    status: { type: String, required: true ,default:"Active"},
     address: { type: AddressSchema, required: true },
     personalDetails: {
         emergencyContact: { type: EmergencyContactSchema, required: true },
     },
     companyDetails: { type: CompanyDetailsSchema, required: true },
+    clients: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Client",
+        },
+    ],
+    pickups: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Pickup",
+        },
+    ],
 })
 
 export default mongoose.model<ICompany>("Company", CompanySchema)
